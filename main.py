@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, redirect, render_template, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import desc
 
@@ -8,7 +8,7 @@ app.config['DEBUG'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:bearclaw@localhost:8889/blogz'
 app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
-
+app.secret_key = 'gm0k38yOnbC3r2Co'
 
 class Post(db.Model):
 
@@ -17,7 +17,7 @@ class Post(db.Model):
     body = db.Column(db.String(250))
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, title,body):
+    def __init__(self, title, body, owner):
         self.title = title
         self.body = body
         self.owner = owner
@@ -33,48 +33,51 @@ class User(db.Model):
         self.username = username
         self.password = password
 
+@app.before_request
+def require_login():
+    allowed_routes = ['login', 'signup']
+    if request.endpoint not in allowed_routes and 'username' not in session:
+        return redirect('/login')
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
+        username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(email=email).first()
+        error = "Inlavid Username or Password"
+        user = User.query.filter_by(username=username).first()
         if user and user.password == password:
-            session['email'] = email
-            flash("Logged in")
-            return redirect('/')
+            session['username'] = username
+            return redirect ('/addpost')
         else:
-            flash('User password incorrect, or user does not exist', 'error')
+            return render_template('login.html', error=error)
 
     return render_template('login.html')
 
-
-@app.route('/register', methods=['POST', 'GET'])
-def register():
+@app.route('/signup', methods=['POST', 'GET'])
+def signup():
     if request.method == 'POST':
-        email = request.form['email']
+        username = request.form['username']
         password = request.form['password']
         verify = request.form['verify']
+        error = "Duplicate Username"
+        
 
-        # TODO - validate user's data
-
-        existing_user = User.query.filter_by(email=email).first()
+        existing_user = User.query.filter_by(username=username).first()
         if not existing_user:
-            new_user = User(email, password)
+            new_user = User(username, password)
             db.session.add(new_user)
             db.session.commit()
-            session['email'] = email
-            return redirect('/')
+            session['username'] = username
+            return redirect('/addpost')
         else:
-            # TODO - user better response messaging
-            return "<h1>Duplicate user</h1>"
+            return render_template('signup.html', error=error)
 
-    return render_template('register.html')
+    return render_template('signup.html')
 
 @app.route('/logout')
 def logout():
-    del session['email']
+    del session['username']
     return redirect('/')
 
 
@@ -82,14 +85,23 @@ def logout():
 def individual_post():
     
     post_id = request.args.get('id')
-    indv_post = Post.query.get(post_id)
-    return render_template('blog.html', indv_post=indv_post)
+    user_id = request.args.get('user')
+    if user_id:
+        user_filter = User.query.get('user_id')
+        
+    if post_id: 
+        indv_post = Post.query.get(post_id)
+
+        return render_template('blog.html', indv_post=indv_post)
+    else:
+        post = Post.query.all()
+        return render_template('blog.html', post=post)
 
 
 
 @app.route('/addpost', methods=['POST','GET'])
 def add_post():
-    
+    owner = User.query.filter_by(username=session['username']).first()
     error1 = ""
     error2 = ""
     
@@ -103,7 +115,7 @@ def add_post():
             error2 = "This feild requires text!"
 
         if not error1 and not error2: 
-            new_post = Post(post_title, post_body)
+            new_post = Post(post_title, post_body, owner)
             db.session.add(new_post)
             db.session.commit()             
     
@@ -118,9 +130,8 @@ def add_post():
 @app.route('/', methods=['POST', 'GET'])
 def index():
    
-    post = Post.query.all()
-    return render_template('blogpost.html',title="Build a Blog", 
-        post = post)
+    user = User.query.all()
+    return render_template('home.html', title="Blogz", user=user)
 
 
 if __name__ == '__main__':
