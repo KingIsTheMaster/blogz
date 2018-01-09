@@ -17,10 +17,10 @@ class Post(db.Model):
     body = db.Column(db.String(250))
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, title, body, owner):
+    def __init__(self, title, body, owner_id):
         self.title = title
         self.body = body
-        self.owner = owner
+        self.owner_id = owner_id
 
 class User(db.Model):
 
@@ -46,6 +46,7 @@ def login():
         password = request.form['password']
         error = "Inlavid Username or Password"
         user = User.query.filter_by(username=username).first()
+
         if user and user.password == password:
             session['username'] = username
             return redirect ('/addpost')
@@ -85,14 +86,15 @@ def logout():
 def individual_post():
     
     post_id = request.args.get('id')
-    user_id = request.args.get('user')
-    if user_id:
-        user_filter = User.query.get('user_id')
-        
+    post_user = request.args.get ('user')
+    print(post_user)
+    user_filt = User.query.filter_by(username=post_user).first()
     if post_id: 
         indv_post = Post.query.get(post_id)
-
-        return render_template('blog.html', indv_post=indv_post)
+        return render_template('individualpost.html', indv_post=indv_post)
+    if user_filt:
+        user_posts = Post.query.filter_by(owner_id=user_filt.id).all()
+        return rendeR_template('singleUser.html', user_posts=user_posts)
     else:
         post = Post.query.all()
         return render_template('blog.html', post=post)
