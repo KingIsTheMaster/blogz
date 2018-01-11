@@ -1,7 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}<center>
-<h1 style="display:inline-block">Build a Blog</h1>
+    {% with messages  = get_flashed_messages()%}
+        {% for message in messages%}
+            <p>{{message}}</p>
+         {% endfor%}
+    {% endwith %}
+<h1 style="display:inline-block">Blogz</h1>
 <form method='post'>
         <label>
             Title : 

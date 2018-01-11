@@ -4,39 +4,62 @@
         <style>
         .error {color: red;}
 
-        body {background-color: #111111;
-        color: white;
-        font-family:candara; 
-        text-align: center;}
+        body {background-color:white;
+        color: black;
+        font-family: monospace; 
+        text-align: justify;
+        width: 600px;
+        height: 100%;
+        margin: auto;
+        left: 0px;
+        right:0px;
+        bottom: 0px;
+        right: 0px;
+        overflow: auto;}
         
         a, a:visited {
-        color: white;
-        text-shadow: 2px 0px 0px #66a3ff;
+        color: black;
+        text-shadow: 1px 0px 0px #66a3ff;
         text-decoration: none;
-        font-weight: bold;
+
         }
         
         a:hover {
-        color: #66a3ff;
-        text-shadow: 2px 0px 0px #ffffff;}
+        color: black;
+        text-shadow: 1px 0px 0px #ffffff;}
 
+        nav ul {
+        padding: 0;
+        display: inline-block;
+        }
+
+        nav ul li {
+            list-style: none;
+            display: inline-block;
+            margin-right: 15px;
+        }
+
+        nav #user-account {
+            float: right;
+        }
         </style>
         <title>{{title}}</title>
 
     </head>
 <body>
     <nav>
-        <text align="left">
-        <a href="/">Home</a> - 
-        <a href="/blog">Blog</a> - 
-        <a href="/addpost">Add Post</a> </text>
-        <text align="right">
-        <a href="/login">Login</a> -
-        <a href="/signup">Signup</a> -
-        <a href="/logout">Logout</a></text>
+        <ul id="user-account">  
+            <li><a href="/login">Login</a> -</li>            
+            <li><a href="/logout">Logout</a></li>      
+        </ul>
+        <ul>
+            <li><a href="/">Home</a> - </li>            
+            <li><a href="/blog">Blog</a> - </li>            
+            <li><a href="/addpost">Add Post</a></li>
+        </ul>
     </nav>
     {% block content %}
     {% endblock %}
-
+   
 </body>
 </html>

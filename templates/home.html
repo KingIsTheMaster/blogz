@@ -1,14 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Build a Blog</h1>
+    {% with messages  = get_flashed_messages()%}
+        {% for message in messages %}
+            <p>{{message}}</p>
+        {% endfor%}
+    {% endwith %}
+    <h1>Blogz Users</h1>
     {% if user|length == 0 %}
     <p>No Users yet</p>
     {% else %}
 
         {% for user in user %}
-        <h2><a href="/blog?user={{user.username}}">{{user.username}}</a></h2>
-        
+        <ul>
+        <li><h2><a href="/blog?user={{user.username}}">{{user.username}}</a></h2></li>
+        </ul>
         {% endfor %}
 
 

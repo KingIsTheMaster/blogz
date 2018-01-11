@@ -8,21 +8,33 @@
             <td><label for="username">Username</label></td>
             <td>
                 <input name="username" type="text" value="">
-                <span class="error"></span>
+                {% if username_error %}
+                <span class="error">  
+                 {{username_error}}
+                 </span>
+                {% endif %}
             </td>
         </tr>
         <tr>
             <td><label for="password">Password</label></td>
             <td>
                 <input name="password" type="password">
-                <span class="error"></span>
+                {% if password_error %}
+                <span class="error">  
+                 {{password_error}}
+                 </span>
+                {% endif %}
             </td>
         </tr>
         <tr>
             <td><label for="verify">Verify Password</label></td>
             <td>
                 <input name="verify" type="password">
-                <span class="error"></span>
+                {% if verify_error %}
+                <span class="error">  
+                 {{verify_error}}
+                 </span>
+                {% endif %}
             </td>
         </tr>
     </table>

@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Blog</h1>
+    <h1>Blog Post!</h1>
     
     <h2>{{indv_post.title}}</h2>
     <p>{{indv_post.body}}</p>
+    written by <a href="/blog?user={{indv_post.owner.username}}">{{indv_post.owner.username}}</a>
 {% endblock %}

@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, session
+from flask import Flask, request, redirect, render_template, session, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import desc
 
@@ -35,9 +35,9 @@ class User(db.Model):
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login', 'signup']
+    allowed_routes = ['login', 'signup', 'index']
     if request.endpoint not in allowed_routes and 'username' not in session:
-        return redirect('/login')
+        return redirect(url_for('login'))
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -47,11 +47,17 @@ def login():
         error = "Inlavid Username or Password"
         user = User.query.filter_by(username=username).first()
 
-        if user and user.password == password:
-            session['username'] = username
-            return redirect ('/addpost')
-        else:
-            return render_template('login.html', error=error)
+        if user:
+            
+            if user.password == password:
+                session['username'] = username
+                flash('Logged in!')
+                return redirect ('/addpost')
+            else:
+                flash('Invalid Password', 'error')
+        else: 
+
+            flash('Username Nonexistent', 'error')
 
     return render_template('login.html')
 
@@ -61,10 +67,26 @@ def signup():
         username = request.form['username']
         password = request.form['password']
         verify = request.form['verify']
-        error = "Duplicate Username"
         
-
         existing_user = User.query.filter_by(username=username).first()
+        
+        error = 'Username is taken'
+        username_error = ''
+        password_error = ''
+        verify_error = ''
+
+        if len(username) < 3 or len(username) > 30 or ' ' in username:
+            username_error = 'Not a valid username'
+            
+        if len(password) < 3 or len(password) > 30 or ' ' in password:
+            password_error = 'Not a valid password'
+
+        if verify != password:
+            verify_error = 'Passwords do not match'
+
+        if username_error or password_error or verify_error:
+                return render_template('signup.html', username_error=username_error, password_error=password_error, verify_error=verify_error)
+
         if not existing_user:
             new_user = User(username, password)
             db.session.add(new_user)
@@ -79,6 +101,7 @@ def signup():
 @app.route('/logout')
 def logout():
     del session['username']
+    flash('Logged Out!')
     return redirect('/')
 
 
@@ -94,7 +117,7 @@ def individual_post():
         return render_template('individualpost.html', indv_post=indv_post)
     if user_filt:
         user_posts = Post.query.filter_by(owner_id=user_filt.id).all()
-        return rendeR_template('singleUser.html', user_posts=user_posts)
+        return render_template('singleUser.html', user_posts=user_posts)
     else:
         post = Post.query.all()
         return render_template('blog.html', post=post)
@@ -117,16 +140,16 @@ def add_post():
             error2 = "This feild requires text!"
 
         if not error1 and not error2: 
-            new_post = Post(post_title, post_body, owner)
+            new_post = Post(post_title, post_body, owner.id)
             db.session.add(new_post)
             db.session.commit()             
     
             return redirect('/blog?id=%s' % new_post.id)
             
         else: 
-            return render_template('addpost.html', title="Build a Blog", error1 = error1, error2 = error2, post_title = post_title , post_body = post_body) 
+            return render_template('addpost.html', title="Blogz", error1 = error1, error2 = error2, post_title = post_title , post_body = post_body) 
    
-    return render_template('addpost.html', title="Build a Blog", error1 = error1, error2 = error2)
+    return render_template('addpost.html', title="Blogz", error1 = error1, error2 = error2)
 
 
 @app.route('/', methods=['POST', 'GET'])

@@ -2,6 +2,11 @@
 
 {% block content %}
 <h1>Login</h1>
+    {% with messages  = get_flashed_messages(with_categories=True) %}
+        {% for category,message in messages %}
+            <p class="error">{{message}}</p>
+        {% endfor%}
+    {% endwith %}
 <p class="error"></p>
 <form method="post">
     <table>
@@ -21,4 +26,4 @@
     <input type="submit">
 </form>
 <p>Don't have an account? <a href="/signup">Create one!</a></p>
-{% endblock %}
+{% endblock %}B
